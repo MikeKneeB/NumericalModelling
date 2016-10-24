@@ -85,6 +85,23 @@ void LogTrapezium(double (*f)(double), double lowerBound, double upperBound);
 void LogSimpsons(double (*f)(double), double lowerBound, double upperBound);
 
 /**
+ * PrecSimpsons is a function to calculate an answer to an integral using the
+ * Simpson rule, to a prescribed number of significant figures. It uses the
+ * Simpsons function described above, and thhe AnalyticSolution function to
+ * compare the given answer against. If the difference between the answer
+ * and the analytic answer is not under 10-sf the function repeats with more
+ * intervals.
+ *
+ * *f : Function to integrate over.
+ * lowerBound : Lower bound for the integration.
+ * upperBound : Upper bound for the integration.
+ * sf : Significant figures for the answer to be.
+ * return : Integral of the function *f between upperBound and lowerBound,
+ * 	to sf significant figures.
+ */
+double PrecSimpsons(double (*f)(double), double lowerBound, double upperBound, int sf);
+
+/**
  * IntPow calculates an integer result for an integer raised to an integer
  * power.
  *
@@ -112,12 +129,13 @@ int main()
 	cout << "Options:" << endl << "(1)\tTrapezium rule up to a user input number of intervals."
 		<< endl << "(2)\tTrapezium rule up to 10^8 intervals."
 		<< endl << "(3)\tSimpsons rule up to a user input number of intervals."
-		<< endl << "(4)\tSimpsons rule up to 10^8 intervals."
+		<< endl << "(4)\tSimpsons rule up to a specified precision."
+		<< endl << "(5)\tSimpsons rule up to 10^8 intervals."
 		<< endl << "Please enter a number: " << flush;
 
 	int choice;
 
-	while (!(cin >> choice) || choice < 1 || choice > 4)
+	while (!(cin >> choice) || choice < 1 || choice > 5)
 	{
 		cout << "Please enter a valid choice: " << flush;
 		cin.clear();
@@ -197,6 +215,17 @@ int main()
 		}
 		case 4:
 		{
+			int sf;
+			cout << "Please enter desired number of significant figures (int): ";
+			cin >> sf;
+			cout << setiosflags(ios::fixed) << setprecision(15) 
+				<<"Answer accurate to " << sf << " significant figures is: " 
+				<< PrecSimpsons(integrationFunction, lowerBound, upperBound, sf)
+				<< endl;
+			break;
+		}
+		case 5:
+		{
 			cout << "Creating very high interval table in 'log_simpson'..." << endl;
 
 			LogSimpsons(integrationFunction, lowerBound, upperBound);
@@ -216,8 +245,8 @@ double Function(double x)
 
 double AnalyticSolution(double lowerBound, double upperBound)
 {
-	return (-exp(-upperBound) * (cos(upperBound) + cos(upperBound)) 
-		+ exp(lowerBound) * (cos(lowerBound) + sin(lowerBound)))/2;
+	return (-exp(-upperBound) * (cos(upperBound) + sin(upperBound)) 
+		+ exp(-lowerBound) * (cos(lowerBound) + sin(lowerBound)))/2;
 }
 
 double Trapezium(double (*f)(double), double lowerBound, double upperBound, int intervals)
@@ -303,6 +332,21 @@ void LogSimpsons(double (*f)(double), double lowerBound, double upperBound)
 
 	outFile.close();
 
+}
+
+double PrecSimpsons(double (*f)(double), double lowerBound, double upperBound, int sf)
+{
+	double answer = Simpsons(f, lowerBound, upperBound, 1);
+	double realAnswer = AnalyticSolution(lowerBound, upperBound);
+
+	int count = 1;
+	
+	while (abs(answer - realAnswer) > pow(10, -sf)){
+		count++;
+		answer = Simpsons(f, lowerBound, upperBound, count);
+	} 
+
+	return answer;	
 }
 
 int IntPow(int x, int n)
