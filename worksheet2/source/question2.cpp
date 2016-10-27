@@ -253,14 +253,12 @@ double Trapezium(double (*f)(double), double lowerBound, double upperBound, int 
 {
 	double space = (upperBound-lowerBound)/intervals;
 
-	double position = lowerBound;
 	double total = 0.0;
 
 	// Invariant: we have integrated up to position from lowerBound.
-	while (position < upperBound)
+	for (int i = 0; i != intervals; i++)	
 	{
-		total += 0.5*((*f)(position) + (*f)(position+space))*space;
-		position += space;
+		total += 0.5*((*f)(i*space) + (*f)((i+1)*space))*space;
 	}
 
 	return total;
@@ -270,14 +268,12 @@ double Simpsons(double (*f)(double), double lowerBound, double upperBound, int i
 {
 	double space = (upperBound - lowerBound)/intervals;
 
-	double position = lowerBound;
 	double total = 0.0;
 
 	//Invariant: we have integrated up to position from lowerBound.
-	while (position < upperBound)
+	for (int i = 0; i != intervals; i++)	
 	{
-		total += (space/6)*((*f)(position)+4*(*f)(position+space/2)+(*f)(position+space));
-		position += space;
+		total += (space/6)*((*f)(i*space)+4*(*f)((i+0.5)*space)+(*f)((i+1)*space));
 	}
 
 	return total;
@@ -287,22 +283,22 @@ void LogTrapezium(double (*f)(double), double lowerBound, double upperBound)
 {
 	ofstream outFile;
 	outFile.open("log_trapezium");
-	outFile << setiosflags(ios::fixed) << setw(12) << left << setprecision(15);
+	outFile << setiosflags(ios::fixed) << setw(15) << left << setprecision(15);
 
 	double analyticAnswer = AnalyticSolution(lowerBound, upperBound);
 
-	double temp, tempHalf;
+	double temp;
 
 	outFile << "LogInterval" << "LogError" << endl;
 
 	// Invariant: we have performed i runs of the trapezium method.
-	for (int i = 0; i != 9; i++)
+	for (int i = 0; i != 18; i++)
 	{
-		temp = log10(abs(Trapezium(f, lowerBound, upperBound, IntPow(10, i)) - analyticAnswer));
-		tempHalf = log10(abs(Trapezium(f, lowerBound, upperBound, pow(10, 0.5+i)) - analyticAnswer));
+		temp = log10(abs((Trapezium(f, lowerBound, upperBound, pow(10, i/2.0)) - analyticAnswer)/analyticAnswer));
+		//tempHalf = log10(abs((Trapezium(f, lowerBound, upperBound, pow(10, 0.5+i)) - analyticAnswer)/analyticAnswer));
 
-		outFile << setw(12) << i << temp << endl; 
-		outFile << setw(12) << setprecision(1) << 0.5+i << setprecision(15) << tempHalf << endl;
+		outFile << setw(15) << setprecision(1) << i/2.0 << setprecision(15) << temp << endl; 
+//		outFile << setw(15) << setprecision(1) << pow(10, 0.5+i) << setprecision(15) << tempHalf << endl;
 	}
 
 	outFile.close();
@@ -316,18 +312,16 @@ void LogSimpsons(double (*f)(double), double lowerBound, double upperBound)
 
 	double analyticAnswer = AnalyticSolution(lowerBound, upperBound);
 
-	double temp, tempHalf;
+	double temp;
 
 	outFile << "LogInterval" << "LogError" << endl;
 
 	// Invariant: we have performed i runs of the simpson method.
-	for (int i = 0; i != 9; i++)
+	for (int i = 0; i != 18; i++)
 	{
-		temp = log10(abs(Simpsons(f, lowerBound, upperBound, IntPow(10, i)) - analyticAnswer));
-		tempHalf = log10(abs(Simpsons(f, lowerBound, upperBound, pow(10, 0.5+i)) - analyticAnswer));
+		temp = log10((abs(Simpsons(f, lowerBound, upperBound, pow(10, i/2.0)) - analyticAnswer)/analyticAnswer));
 
-		outFile << setw(12) << i << temp << endl; 
-		outFile << setw(12) << setprecision(1) << 0.5+i << setprecision(15) << tempHalf << endl;
+		outFile << setw(12) << setprecision(1) << i/2.0 << setprecision(15) << temp << endl; 
 	}
 
 	outFile.close();

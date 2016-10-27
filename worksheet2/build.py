@@ -27,7 +27,8 @@ tex_name="worksheet2.tex"
 
 executables_to_compile={"question1.cpp" : "trapezium",
         "question2.cpp" : "ext_trapezium",
-        "question6.cpp" : "gsl_1"}
+        "question6.cpp" : "gsl_1",
+	"question7.cpp" : "gsl_2"}
 
 def buildlatex():
     os.chdir(document_dir)
