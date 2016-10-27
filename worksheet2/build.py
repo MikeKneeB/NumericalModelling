@@ -19,14 +19,23 @@ parser.add_argument('--document', '-d', help='Generate LaTex documentation for t
 parser.add_argument('--only-document', '-D', help='Only generate LaTex documentation.', action='store_true')
 
 compiler="g++"
-compiler_flags=["-Wall", "-O2"]
+compiler_flags=["-Wall", "-O2", "-I/usr/include", "-lgsl", "-lgslcblas", "-lm"]
 source_dir="source/"
 object_dir="images/"
 document_dir="documentation/"
-tex_name="test.tex"
+tex_name="worksheet2.tex"
 
 executables_to_compile={"question1.cpp" : "trapezium",
-        "question2.cpp" : "ext_trapezium"}
+        "question2.cpp" : "ext_trapezium",
+        "question6.cpp" : "gsl_1"}
+
+def buildlatex():
+    os.chdir(document_dir)
+    call(['pdflatex', tex_name])
+    call(['bibtex', tex_name[:-4]])
+    call(['pdflatex', tex_name])
+    call(['pdflatex', tex_name])
+    os.chdir('..')
 
 print "Beginning build."
 
@@ -35,9 +44,7 @@ args = parser.parse_args()
 print args
 
 if args.only_document == True:
-    os.chdir(document_dir)
-    call(['pdflatex',  tex_name])
-    os.chdir('..')
+    buildlatex()
 
 elif args.sources==None:
     
@@ -50,6 +57,8 @@ elif args.sources==None:
                 exe_list.insert(1, "-"+item)
         print exe_list
         call(exe_list)
+    if args.document == True:
+        buildlatex()
 
 else:
 
@@ -62,16 +71,7 @@ else:
                 exe_list.insert(1, "-"+item)
         print exe_list
         call(exe_list)
+    if agrs.document == True:
+        buildlatex()
 
-if args.document == True:
-    os.chdir(document_dir)
-    call(['pdflatex', document_dir])
-    os.chdir('..')
 
-#def buildlatex():
-#    os.chdir(document_dir)
-#    call(['pdflatex', document_dir])
-#    call(['bibtext', tex_name[:-4])
-#    call(['pdflatex', document_dir])
-#    call(['pdflatex', document_dir])
-#    os.chdir('..')
