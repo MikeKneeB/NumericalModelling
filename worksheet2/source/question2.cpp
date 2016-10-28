@@ -102,16 +102,6 @@ void LogSimpsons(double (*f)(double), double lowerBound, double upperBound);
 double PrecSimpsons(double (*f)(double), double lowerBound, double upperBound, int sf);
 
 /**
- * IntPow calculates an integer result for an integer raised to an integer
- * power.
- *
- * x : Base.
- * n : Exponent.
- * return : x^n.
- */
-int IntPow(int x, int n);
-
-/**
  * Main function for the program, asks for user input for max number of
  * intervals, and then performs the trapezium method in a loop using intervals
  * 1 -> specified intervals. Writes the output to file 'trapezium_output'
@@ -244,6 +234,7 @@ double Function(double x)
 
 double AnalyticSolution(double lowerBound, double upperBound)
 {
+	// Analytic solution as shown in the report.
 	return (-exp(-upperBound) * (cos(upperBound) + sin(upperBound)) 
 		+ exp(-lowerBound) * (cos(lowerBound) + sin(lowerBound)))/2;
 }
@@ -257,6 +248,7 @@ double Trapezium(double (*f)(double), double lowerBound, double upperBound, int 
 	// Invariant: we have integrated up to position from lowerBound.
 	for (int i = 0; i != intervals; i++)	
 	{
+		// Trapezium rule:
 		total += 0.5*((*f)(i*space) + (*f)((i+1)*space))*space;
 	}
 
@@ -272,6 +264,7 @@ double Simpsons(double (*f)(double), double lowerBound, double upperBound, int i
 	//Invariant: we have integrated up to position from lowerBound.
 	for (int i = 0; i != intervals; i++)	
 	{
+		// Simpsons rule:
 		total += (space/6)*((*f)(i*space)+4*(*f)((i+0.5)*space)+(*f)((i+1)*space));
 	}
 
@@ -295,11 +288,9 @@ void LogTrapezium(double (*f)(double), double lowerBound, double upperBound)
 	{
 		temp = log10(abs((Trapezium(f, lowerBound, upperBound, pow(10, i/2.0)) - analyticAnswer)/analyticAnswer));
 		tempError = log10(abs((temp - analyticAnswer)/analyticAnswer));
-		//tempHalf = log10(abs((Trapezium(f, lowerBound, upperBound, pow(10, 0.5+i)) - analyticAnswer)/analyticAnswer));
 
 		outFile << setw(15) << setprecision(1) << i/2.0 << setprecision(15) 
 			<< setw(22) << temp << tempError << endl;
-//		outFile << setw(15) << setprecision(1) << pow(10, 0.5+i) << setprecision(15) << tempHalf << endl;
 	}
 
 	outFile.close();
@@ -338,7 +329,11 @@ double PrecSimpsons(double (*f)(double), double lowerBound, double upperBound, i
 
 	int count = 1;
 	
-	while (abs(answer - realAnswer) > pow(10, -sf)){
+	// Check that we have reached our required sf by comparing to
+	// our analytic answer.
+	// We actually ask for error limit one more than prescribed for
+	// safety.
+	while (abs(answer - realAnswer) > pow(10, -(sf+1))){
 		count++;
 		answer = Simpsons(f, lowerBound, upperBound, count);
 	} 
@@ -347,15 +342,4 @@ double PrecSimpsons(double (*f)(double), double lowerBound, double upperBound, i
 	cout << "Took " << count << " slices." << endl;
 
 	return answer;	
-}
-
-int IntPow(int x, int n)
-{
-	int total = 1;
-	//Invariant: we multiplied total by x i times.
-	for (int i = 0; i != n; i++)
-	{
-		total *= x;
-	}
-	return total;
 }
