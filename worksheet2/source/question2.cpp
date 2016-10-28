@@ -150,6 +150,8 @@ int main()
 	cout << "Please enter upper bound: " << flush;
 	cin >> upperBound;
 
+	cout << setprecision(15) << "Analytic Solution: " << AnalyticSolution(lowerBound, upperBound) << endl;
+
 	switch (choice)
 	{
 		case 1:
