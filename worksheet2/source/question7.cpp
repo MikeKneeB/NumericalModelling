@@ -1,3 +1,12 @@
+/**
+ * Mike Knee - 28/10/2016
+ *
+ * Source code for a program that uses a gsl routine to evaluate an osicallatory
+ * function.
+ *
+ * Using gsl version 1.15.
+ */
+
 #include <stdio.h>
 #include <cmath>
 #include <gsl/gsl_integration.h>

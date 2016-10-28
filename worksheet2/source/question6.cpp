@@ -1,3 +1,12 @@
+/**
+ * Mike Knee - 28/10/2016
+ *
+ * Source code for a program that evaluates a simple integral using
+ * a GSL routine.
+ *
+ * Using gsl version 1.15.
+ */
+
 #include <gsl/gsl_integration.h>
 #include <iostream>
 #include <iomanip>
