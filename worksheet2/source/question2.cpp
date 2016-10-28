@@ -218,10 +218,7 @@ int main()
 			int sf;
 			cout << "Please enter desired number of significant figures (int): ";
 			cin >> sf;
-			cout << setiosflags(ios::fixed) << setprecision(15) 
-				<<"Answer accurate to " << sf << " significant figures is: " 
-				<< PrecSimpsons(integrationFunction, lowerBound, upperBound, sf)
-				<< endl;
+			PrecSimpsons(integrationFunction, lowerBound, upperBound, sf);
 			break;
 		}
 		case 5:
@@ -287,17 +284,19 @@ void LogTrapezium(double (*f)(double), double lowerBound, double upperBound)
 
 	double analyticAnswer = AnalyticSolution(lowerBound, upperBound);
 
-	double temp;
+	double temp, tempError;
 
-	outFile << "LogInterval" << "LogError" << endl;
+	outFile << "LogInterval" << setw(22) << "LogError" << "Result" << endl;
 
 	// Invariant: we have performed i runs of the trapezium method.
 	for (int i = 0; i != 18; i++)
 	{
 		temp = log10(abs((Trapezium(f, lowerBound, upperBound, pow(10, i/2.0)) - analyticAnswer)/analyticAnswer));
+		tempError = log10(abs((temp - analyticAnswer)/analyticAnswer));
 		//tempHalf = log10(abs((Trapezium(f, lowerBound, upperBound, pow(10, 0.5+i)) - analyticAnswer)/analyticAnswer));
 
-		outFile << setw(15) << setprecision(1) << i/2.0 << setprecision(15) << temp << endl; 
+		outFile << setw(15) << setprecision(1) << i/2.0 << setprecision(15) 
+			<< setw(22) << temp << tempError << endl;
 //		outFile << setw(15) << setprecision(1) << pow(10, 0.5+i) << setprecision(15) << tempHalf << endl;
 	}
 
@@ -308,20 +307,22 @@ void LogSimpsons(double (*f)(double), double lowerBound, double upperBound)
 {
 	ofstream outFile;
 	outFile.open("log_simpson");
-	outFile << setiosflags(ios::fixed) << setw(12) << left << setprecision(15);
+	outFile << setiosflags(ios::fixed) << setw(15) << left << setprecision(15);
 
 	double analyticAnswer = AnalyticSolution(lowerBound, upperBound);
 
-	double temp;
+	double temp, tempError;
 
 	outFile << "LogInterval" << "LogError" << endl;
 
 	// Invariant: we have performed i runs of the simpson method.
 	for (int i = 0; i != 18; i++)
 	{
-		temp = log10((abs(Simpsons(f, lowerBound, upperBound, pow(10, i/2.0)) - analyticAnswer)/analyticAnswer));
+		temp = Simpsons(f, lowerBound, upperBound, pow(10, i/2.0));
+		tempError = log10(abs((temp - analyticAnswer)/analyticAnswer));
 
-		outFile << setw(12) << setprecision(1) << i/2.0 << setprecision(15) << temp << endl; 
+		outFile << setw(15) << setprecision(1) << i/2.0 << setprecision(15) 
+		<< setw(22) << temp << tempError << endl; 
 	}
 
 	outFile.close();
@@ -339,6 +340,9 @@ double PrecSimpsons(double (*f)(double), double lowerBound, double upperBound, i
 		count++;
 		answer = Simpsons(f, lowerBound, upperBound, count);
 	} 
+
+	cout << setprecision(15) << "Result to " << sf << " significant figures: " << answer << endl;
+	cout << "Took " << count << " slices." << endl;
 
 	return answer;	
 }
