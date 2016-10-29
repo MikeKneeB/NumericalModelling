@@ -10,6 +10,7 @@
 #include <stdio.h>
 #include <cmath>
 #include <gsl/gsl_integration.h>
+#include <iostream>
 
 #define PI 3.14159265359
 
@@ -17,6 +18,9 @@ double Function(double x, void * params);
 
 int main()
 {
+	int sf;
+	printf("Please enter desired significant figures: ");
+	std::cin >> sf;
 
 	// Allocate a table for qawo integration.
 	// Here we specify omega as 30.0 and use the GSL_INTEG_SINE option, which means in our
@@ -33,7 +37,7 @@ int main()
 	gsl_function function;
 	function.function = &Function;
 
-	gsl_integration_qawo(&function, 0, 1e-7, 0, 1000, workspace, table, &result, &error);  
+	gsl_integration_qawo(&function, 0, pow(10, -sf), 0, 1000, workspace, table, &result, &error);  
 
 	printf("Result: %.15f \n", result);
 	printf("Error: %.15f \n", error);

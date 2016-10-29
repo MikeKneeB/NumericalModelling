@@ -51,5 +51,5 @@ int main()
 
 double Function(double x, void * params)
 {
-	return std::exp(-x)*std::sin(x);
+	return x*std::sin(30*x)*std::cos(x);
 }
