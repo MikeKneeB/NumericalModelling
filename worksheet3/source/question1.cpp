@@ -1,9 +1,7 @@
-#include <stdio.h>
+#include <cstdio>
 #include <iostream>
 #include <fstream>
 #include <cmath>
-
-#define PI 3.1415926535
 
 double Derivative(double x, double y);
 
@@ -17,7 +15,7 @@ int main()
 
 	startY = 0;
 	startX = 0;
-	finalX = PI/4;	
+	finalX = M_PI/4;	
 	
 	int intervals;
 	printf("Please input no. of intervals: ");
@@ -26,9 +24,13 @@ int main()
 	FILE * file;
 
 	file = fopen("euler_out", "w");
+
+	printf("Writing to file 'euler_out'...\n");
 	
 	double answer;
 	double actual = Analytic(finalX);
+
+	fprintf(file, "%-10s%-20s%-20s\n", "Intervals", "Result", "Analytic Error");
 	
 	for (int i = 1; i <= intervals; i++)
 	{
@@ -37,6 +39,8 @@ int main()
 	}
 
 	fclose(file);
+
+	printf("Done!\n");
 
 	return 0;
 }
