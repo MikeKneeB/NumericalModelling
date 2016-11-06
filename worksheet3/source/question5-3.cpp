@@ -73,6 +73,37 @@ int main()
 
 	gsl_odeiv2_driver_free(driver);
 
+	gsl_odeiv2_step * step = gsl_odeiv2_step_alloc(gsl_odeiv2_step_rk4, 2);
+	gsl_odeiv2_control * control = gsl_odeiv2_control_y_new(1e-10, 1e-10);
+	gsl_odeiv2_evolve * evolve = gsl_odeiv2_evolve_alloc(2);
+
+	double h = 1;
+	int count = 1;
+	t = 0;
+	y[0] = yInitial[0];
+	y[1] = yInitial[1];
+
+	FILE * file;
+	file = fopen("phase_adap_gsl_rk_out", "w");
+
+	fprintf(file, "%-10s%-20s%-20s%-20s\n", "Interval", "Time", "Result V", "Result X");
+	printf("Writing output to file 'phase_adap_gsl_rk_out'...\n");
+
+	while (t < goal)
+	{
+		gsl_odeiv2_evolve_apply(evolve, control, step, &sys, &t, goal, &h, y);
+		fprintf(file, "%-10i%-20.15f%-20.15f%-20.15f\n", count, t, y[0], y[1]);
+		count++;
+	}
+
+	gsl_odeiv2_step_free(step);
+	gsl_odeiv2_control_free(control);
+	gsl_odeiv2_evolve_free(evolve);
+
+	fclose(file);
+
+	printf("Done!\n");
+
 	return 0;
 
 }
