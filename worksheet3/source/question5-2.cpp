@@ -106,7 +106,7 @@ int main()
 				//Check for error, and stop looping if something goes wrong.
 				if (s != GSL_SUCCESS)
 				{
-					printf("Critical failure.");
+					printf("Critical failure.\n");
 					break;
 				}
 				gsl_odeiv2_driver_reset(driver);

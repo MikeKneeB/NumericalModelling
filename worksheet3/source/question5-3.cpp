@@ -36,6 +36,9 @@ int Jacobian(double t, const double y[], double * dfdy, double dfdt[], void * pa
 /**
  * Main function, creates necessary objects and then allows driver object to
  * find result using adaptive number of steps.
+ *
+ * We both output the result and make a file containing the value of v, x and t
+ * after each interval.
  */
 int main()
 {
@@ -63,7 +66,7 @@ int main()
 
 	if (s != GSL_SUCCESS)
 	{
-		printf("Critical failure.");
+		printf("Critical failure.\n");
 	}
 	else
 	{
@@ -91,9 +94,13 @@ int main()
 
 	while (t < goal)
 	{
-		gsl_odeiv2_evolve_apply(evolve, control, step, &sys, &t, goal, &h, y);
+		s = gsl_odeiv2_evolve_apply(evolve, control, step, &sys, &t, goal, &h, y);
 		fprintf(file, "%-10i%-20.15f%-20.15f%-20.15f\n", count, t, y[0], y[1]);
 		count++;
+		if (s != GSL_SUCCESS)
+		{
+			printf("Critical failure.\n");
+		}
 	}
 
 	gsl_odeiv2_step_free(step);

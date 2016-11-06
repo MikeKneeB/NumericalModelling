@@ -21,6 +21,7 @@ compiler="g++"
 compiler_flags=["-Wall", "-O2", "-I/usr/include", "-L/usr/lib", "-lgsl", "-lgslcblas", "-lm"]
 source_dir="source/"
 object_dir="images/"
+success = True
 
 executables_to_compile={"question1.cpp" : "euler",
 			"question5-1.cpp" : "rungekutta",
@@ -47,7 +48,8 @@ if args.sources==None:
                 exe_list += "-"+item
         print "Calling: " + ' '.join(exe_list)
 	print
-        call(exe_list)
+        if call(exe_list) != 0:
+            success = False
 
 else:
 
@@ -62,9 +64,15 @@ else:
             for item in args.flags:
                 exe_list.insert(1, "-"+item)
         print exe_list
-        call(exe_list)
-
-print
-print "Done!"
-print "Hooray!"
-print
+        if call(exe_list) != 0:
+            success = False
+        
+if success:
+    print
+    print "Done!"
+    print "Hooray!"
+    print
+else:
+    print
+    print "FUCK."
+    print
