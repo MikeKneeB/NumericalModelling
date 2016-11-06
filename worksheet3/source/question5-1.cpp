@@ -14,7 +14,8 @@
 /**
  * Vector struct, useful for storing results and intermediate answers. Used
  * throughout this code as it is more appropriate than both std::vector<> and
- * the array type.
+ * the array type. (Neither have scalar multiplication or addition which is
+ * invaluable.)
  */
 struct Vector
 {
@@ -24,7 +25,7 @@ struct Vector
 	double one;
 	double two;
 
-	// Defining basic operations.
+	// Defining basic arithmetic operations.
 	Vector operator+(Vector const& other)
 	{
 		Vector temp;
@@ -83,6 +84,17 @@ Vector Derivative(double t, Vector y);
 Vector Analytic(double t);
 
 /**
+ * Function that performs one step of the second order Runge-Kutta method.
+ *
+ * *d : derivative function for 2 dimensional problem.
+ * Vector y0 : value of y at start of step.
+ * double t0 : value of t at start of step.
+ * double h : width of step.
+ * return : estimate value of y at t0 + h.
+ */
+Vector RungeKuttaStep(Vector (*d)(double, Vector), Vector y0, double t0, double h);
+
+/**
  * Function that applies second order Runge-Kutta using specified derivative
  * function. Uses intervals number of intervals.
  *
@@ -102,7 +114,7 @@ Vector RungeKuttaSecond(Vector (*d)(double, Vector), Vector startY, double start
 int main()
 {
 	// Initial conditions.
-	Vector startY;
+	Vector startY, answer;
 	startY.one = 1;
 	startY.two = 0;
 	double startT = 0;
@@ -110,32 +122,67 @@ int main()
 	double finalT;
 	printf("Please input value of t to calculate: ");
 	std::cin >> finalT;
-	
+
+	Vector actual = Analytic(finalT);
+
 	int intervals;
 	printf("Please input no. of intervals: ");
 	std::cin >> intervals;
 
 	FILE * file;
 
-	file = fopen("rk_out", "w");
-	
-	Vector answer;
-	// Compute analytic answer for comparison.
-	Vector actual = Analytic(finalT);
-	
-	printf("Writing to file 'rk_out'...\n");
+	int choice;
+	printf("Please enter 1 for error analysis, 2 for phase plot: ");
 
-	fprintf(file, "%-10s%-20s%-20s%-20s%-20s\n",
-		"Intervals", "Result V", "Result X", "Analytic Error V", "Analytic Error X");
-	
-	for (int i = 1; i <= intervals; i++)
+	while (!(std::cin >> choice) || choice < 1 || choice > 2)
 	{
-		// Apply rk i times.
-		answer = RungeKuttaSecond(Derivative, startY, startT, i, finalT);
-		fprintf(file, "%-10i%-20.15f%-20.15f%-20.15f%-20.15f\n", 
-			i, answer.one, answer.two, 
-			std::abs((answer.one-actual.one)/actual.one),
-			std::abs((answer.two-actual.two)/actual.two));
+		printf("Enter valid choice: ");
+		std::cin.clear();
+		std::cin.ignore();
+	}
+	
+	switch (choice)
+	{
+		case 1:
+
+			file = fopen("rk_out", "w");
+	
+			printf("Writing to file 'rk_out'...\n");
+			fprintf(file, "%-10s%-20s%-20s%-20s%-20s\n",
+				"Intervals", "Result V", "Result X", "Analytic Error V", "Analytic Error X");
+	
+			for (int i = 1; i <= intervals; i++)
+			{
+				// Apply rk i times.
+				answer = RungeKuttaSecond(Derivative, startY, startT, i, finalT);
+				fprintf(file, "%-10i%-20.15f%-20.15f%-20.15f%-20.15f\n", 
+					i, answer.one, answer.two, 
+					std::abs((answer.one-actual.one)/actual.one),
+					std::abs((answer.two-actual.two)/actual.two));
+			}
+			break;
+		case 2:
+
+			file = fopen("phase_rk_out", "w");
+
+			printf("Writing to file 'phase_rk_out'...\n");
+
+			fprintf(file, "%-10s%-20s%-20s%-20s\n",
+				"Interval", "Time", "Result V", "Result X");
+
+			double t = startT;
+			double h = (finalT - startT)/intervals;
+			Vector y = startY;
+
+			for (int i = 0; i != intervals; i++)
+			{
+				// Apply rk 1 time.
+				fprintf(file, "%-10i%-20.15f%-20.15f%-20.15f\n", i, t, y.one, y.two);
+				y = RungeKuttaStep(Derivative, y, t, h);
+				// Increment t.
+				t += h;
+			}
+			break;
 	}
 
 	fclose(file);
@@ -162,26 +209,36 @@ Vector Analytic(double t)
 	return temp;
 }
 
+Vector RungeKuttaStep(Vector (*d)(double, Vector), Vector y0, double t0, double h)
+{
+	Vector k1, k2, y1;
+
+	// Intermediate r-k values.
+	k1 = (h * (*d)(t0, y0));
+	k2 = (h * (*d)(t0 + h/2, y0 + k1/2.0));
+
+	y1 = y0 + k2;
+
+	return y1;
+}
+
 Vector RungeKuttaSecond(Vector (*d)(double, Vector), Vector startY, double startT, int intervals, double finalT)
 {
 	double h = (finalT - startT)/intervals;		
 	
 	// Temporary variables.
-	Vector k1, k2, y0, y1;
+	Vector y;
 	double t;
 
-	y0 = startY;
+	y = startY;
 	t = startT;
 
 	// Invariant: we have moved to time t = startT + i*h.
 	for (int i = 0; i != intervals; i++)
 	{
-		k1 = (h * (*d)(t, y0));
-		k2 = (h * (*d)(t + h/2, y0 + k1/2.0));
-		y1 = y0 + k2;
-
-		y0 = y1;
+		y = RungeKuttaStep(d, y, t, h);
+		t += h;
 	}
 
-	return y0;
+	return y;
 }

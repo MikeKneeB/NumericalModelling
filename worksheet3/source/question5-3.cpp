@@ -19,7 +19,7 @@
  *
  * double t : Time to evaluate derivatives at. (Not used here, but for more
  * 		complex systems could be.)
- * double y[] : Array corresponding to v and x (y[0] = v, y[1] = x.
+ * double y[] : Array corresponding to v and x (y[0] = v, y[1] = x).
  * double f[] : Array to store the values of derivatives after function has
  * 		been called (f[0] = v', f[1] = x').
  * void * params : Parameters for the function required by GSL, unused here.
@@ -39,7 +39,7 @@ int Jacobian(double t, const double y[], double * dfdy, double dfdt[], void * pa
  */
 int main()
 {
-	int * params;
+	int * params = 0;
 	// Define system as before (see question5-2.cpp).
 	gsl_odeiv2_system sys = {Function, Jacobian, 2, params};
 

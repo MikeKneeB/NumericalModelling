@@ -41,7 +41,7 @@ int Jacobian(double t, const double y[], double * dfdy, double dfdt[], void * pa
  */
 int main()
 {
-	int * params;
+	int * params = 0;
 	// Define system for the ODE, with Function, Jacobian and params.
 	// Third argument '2' corresponds to the dimensions of the system
 	// which in this case is 2 (v & x).
@@ -70,34 +70,73 @@ int main()
 
 	int interval, s;
 
-	printf("Enter number of step: ");
+	printf("Enter number of steps: ");
 	std::cin >> interval;
 
 	FILE * file;
-	file = fopen("gsl_rk_out", "w");
 
-	printf("Writing to file 'gsl_rk_out'...\n");
+	int choice;
+	printf("Please enter 1 for error analysis, 2 for phase plot: ");
 
-	fprintf(file, "%-10s%-20s%-20s\n", "Interval", "Result V", "Result X");
-
-	for (int i = 1; i <= interval; i++)
+	while (!(std::cin >> choice) || choice < 1 || choice > 2)
 	{
-		// Apply steps of size (goal/i) i times, store result in y.
-		// This means we will always get to the goal in i steps, as our
-		// initial condition for t is t=0.
-		s = gsl_odeiv2_driver_apply_fixed_step(driver, &t, goal/i, i, y);
-		// Print output before error check, as result may give some
-		// indication about failure...
-		fprintf(file, "%-10i%-20.15f%-20.15f\n", i, y[0], y[1]);
-		//Check for error, and stop looping if something goes wrong.
-		if (s != GSL_SUCCESS)
-		{
-			printf("Critical failure.");
+		printf("Enter valid choice: ");
+		std::cin.clear();
+		std::cin.ignore();
+	}
+
+	switch (choice)
+	{
+		case 1:
+			file = fopen("gsl_rk_out", "w");
+
+			printf("Writing to file 'gsl_rk_out'...\n");
+
+			fprintf(file, "%-10s%-20s%-20s\n", "Interval", "Result V", "Result X");
+
+			for (int i = 1; i <= interval; i++)
+			{
+				// Apply steps of size (goal/i) i times, store result in y.
+				// This means we will always get to the goal in i steps, as our
+				// initial condition for t is t=0.
+				s = gsl_odeiv2_driver_apply_fixed_step(driver, &t, goal/i, i, y);
+				// Print output before error check, as result may give some
+				// indication about failure...
+				fprintf(file, "%-10i%-20.15f%-20.15f\n", i, y[0], y[1]);
+				//Check for error, and stop looping if something goes wrong.
+				if (s != GSL_SUCCESS)
+				{
+					printf("Critical failure.");
+					break;
+				}
+				gsl_odeiv2_driver_reset(driver);
+				y[0] = yInitial[0];
+				y[1] = yInitial[1];
+			}
 			break;
-		}
-		gsl_odeiv2_driver_reset(driver);
-		y[0] = yInitial[0];
-		y[1] = yInitial[1];
+
+		case 2:
+			file = fopen("phase_gsl_rk_out", "w");
+
+			printf("Writing to file 'phase_gsl_rk_out'...\n");
+
+			fprintf(file, "%-10s%-20s%-20s%-20s\n", "Interval", "Time", "Result V", "Result X");
+
+			for (int i = 0; i != interval; i++)
+			{
+				// Apply one step of size goal/interval.
+				s = gsl_odeiv2_driver_apply_fixed_step(driver, &t, goal/interval, 1, y);
+
+				fprintf(file, "%-10i%-20.15f%-20.15f%-20.15f\n", i, t, y[0], y[1]);
+
+				if (s != GSL_SUCCESS)
+				{
+					printf("Critical failure");
+					break;
+				}
+			}
+			break;
+
 	}
 
 	fclose(file);
