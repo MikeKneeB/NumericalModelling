@@ -105,11 +105,11 @@ int main()
 				// indication about failure...
 				fprintf(file, "%-10i%-20.15f%-20.15f%-20.15f\n", i, y[0], y[1], (goal-tInitial)/i);
 				//Check for error, and stop looping if something goes wrong.
-				if (s != GSL_SUCCESS)
-				{
-					printf("Critical failure.\n");
-					break;
-				}
+//				if (s != GSL_SUCCESS)
+//				{
+//					printf("Critical failure.\n");
+//					break;
+//				}
 				gsl_odeiv2_driver_reset(driver);
 				y[0] = yInitial[0];
 				y[1] = yInitial[1];

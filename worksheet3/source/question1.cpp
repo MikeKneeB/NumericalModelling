@@ -61,6 +61,11 @@ int main()
 	printf("Please input no. of intervals: ");
 	std::cin >> intervals;
 
+	if (intervals > 10000)
+	{
+		printf("This will take some time...")
+	}
+
 	FILE * file;
 
 	file = fopen("euler_out", "w");
