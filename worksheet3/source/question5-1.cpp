@@ -148,17 +148,18 @@ int main()
 			file = fopen("rk_out", "w");
 	
 			printf("Writing to file 'rk_out'...\n");
-			fprintf(file, "%-10s%-20s%-20s%-20s%-20s\n",
-				"Intervals", "Result V", "Result X", "Analytic Error V", "Analytic Error X");
+			fprintf(file, "%-10s%-20s%-20s%-20s%-20s%-20s\n",
+				"Intervals", "Result V", "Result X", "Analytic Error V", "Analytic Error X", "Width");
 	
 			for (int i = 1; i <= intervals; i++)
 			{
 				// Apply rk i times.
 				answer = RungeKuttaSecond(Derivative, startY, startT, i, finalT);
-				fprintf(file, "%-10i%-20.15f%-20.15f%-20.15f%-20.15f\n", 
+				fprintf(file, "%-10i%-20.15f%-20.15f%-20.15f%-20.15f%-20.15f\n", 
 					i, answer.one, answer.two, 
 					std::abs((answer.one-actual.one)/actual.one),
-					std::abs((answer.two-actual.two)/actual.two));
+					std::abs((answer.two-actual.two)/actual.two),
+					(finalT - startT)/i);
 			}
 			break;
 		case 2:
@@ -167,8 +168,8 @@ int main()
 
 			printf("Writing to file 'phase_rk_out'...\n");
 
-			fprintf(file, "%-10s%-20s%-20s%-20s\n",
-				"Interval", "Time", "Result V", "Result X");
+			fprintf(file, "%-10s%-20s%-20s%-20s%-20s\n",
+				"Interval", "Time", "Result V", "Result X", "Width");
 
 			double t = startT;
 			double h = (finalT - startT)/intervals;
@@ -177,7 +178,7 @@ int main()
 			for (int i = 0; i != intervals; i++)
 			{
 				// Apply rk 1 time.
-				fprintf(file, "%-10i%-20.15f%-20.15f%-20.15f\n", i, t, y.one, y.two);
+				fprintf(file, "%-10i%-20.15f%-20.15f%-20.15f%-20.15f\n", i, t, y.one, y.two, h);
 				y = RungeKuttaStep(Derivative, y, t, h);
 				// Increment t.
 				t += h;

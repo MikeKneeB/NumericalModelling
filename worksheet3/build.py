@@ -68,11 +68,9 @@ else:
             success = False
         
 if success:
-    print
     print "Done!"
     print "Hooray!"
     print
 else:
-    print
     print "FUCK."
     print

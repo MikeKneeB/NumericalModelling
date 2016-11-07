@@ -60,8 +60,9 @@ int main()
 	gsl_odeiv2_driver * driver = gsl_odeiv2_driver_alloc_y_new(&sys, gsl_odeiv2_step_rk4, 1e-3, 1e-10, 1e-10);
 
 	//Initial conditions.
-	double t = 0;
+	double tInitial = 0;
 	double yInitial[2] = {1.0, 0.0};
+	double t = tInitial;
 	double y[2] = {yInitial[0], yInitial[1]};
 
 	double goal;
@@ -92,17 +93,17 @@ int main()
 
 			printf("Writing to file 'gsl_rk_out'...\n");
 
-			fprintf(file, "%-10s%-20s%-20s\n", "Interval", "Result V", "Result X");
+			fprintf(file, "%-10s%-20s%-20s%-20s\n", "Interval", "Result V", "Result X", "Width");
 
 			for (int i = 1; i <= interval; i++)
 			{
 				// Apply steps of size (goal/i) i times, store result in y.
 				// This means we will always get to the goal in i steps, as our
 				// initial condition for t is t=0.
-				s = gsl_odeiv2_driver_apply_fixed_step(driver, &t, goal/i, i, y);
+				s = gsl_odeiv2_driver_apply_fixed_step(driver, &t, (goal-tInitial)/i, i, y);
 				// Print output before error check, as result may give some
 				// indication about failure...
-				fprintf(file, "%-10i%-20.15f%-20.15f\n", i, y[0], y[1]);
+				fprintf(file, "%-10i%-20.15f%-20.15f%-20.15f\n", i, y[0], y[1], (goal-tInitial)/i);
 				//Check for error, and stop looping if something goes wrong.
 				if (s != GSL_SUCCESS)
 				{
@@ -120,14 +121,14 @@ int main()
 
 			printf("Writing to file 'phase_gsl_rk_out'...\n");
 
-			fprintf(file, "%-10s%-20s%-20s%-20s\n", "Interval", "Time", "Result V", "Result X");
+			fprintf(file, "%-10s%-20s%-20s%-20s%-20s\n", "Interval", "Time", "Result V", "Result X", "Width");
 
 			for (int i = 0; i != interval; i++)
 			{
 				// Apply one step of size goal/interval.
-				s = gsl_odeiv2_driver_apply_fixed_step(driver, &t, goal/interval, 1, y);
+				s = gsl_odeiv2_driver_apply_fixed_step(driver, &t, (goal-tInitial)/interval, 1, y);
 
-				fprintf(file, "%-10i%-20.15f%-20.15f%-20.15f\n", i, t, y[0], y[1]);
+				fprintf(file, "%-10i%-20.15f%-20.15f%-20.15f%-20.15f\n", i, t, y[0], y[1], (goal-tInitial)/interval);
 
 				if (s != GSL_SUCCESS)
 				{

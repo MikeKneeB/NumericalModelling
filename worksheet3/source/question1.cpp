@@ -71,12 +71,12 @@ int main()
 	// Actual answer for computing error.
 	double actual = Analytic(finalX);
 
-	fprintf(file, "%-10s%-20s%-20s\n", "Intervals", "Result", "Analytic Error");
+	fprintf(file, "%-10s%-20s%-20s%-20s\n", "Intervals", "Result", "Analytic Error", "Width");
 	
 	for (int i = 1; i <= intervals; i++)
 	{
 		answer = Euler(Derivative, startY, startX, i, finalX);
-		fprintf(file, "%-10i%-20.15f%-20.15f\n", i, answer, std::abs((answer-actual)/actual));
+		fprintf(file, "%-10i%-20.15f%-20.15f%-20.15f\n", i, answer, std::abs((answer-actual)/actual), (finalX - startX)/i);
 	}
 
 	fclose(file);

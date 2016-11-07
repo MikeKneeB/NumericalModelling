@@ -74,12 +74,16 @@ int main()
 		printf("V: %-15.15f X: %-15.15f\n", y[0], y[1]);
 	}
 
+	// Finished with driver object...
 	gsl_odeiv2_driver_free(driver);
 
+	// Create lower level odeiv2 objects, outside of a driver wrapper.
 	gsl_odeiv2_step * step = gsl_odeiv2_step_alloc(gsl_odeiv2_step_rk4, 2);
+	// Desired precision is 10 s.f.
 	gsl_odeiv2_control * control = gsl_odeiv2_control_y_new(1e-10, 1e-10);
 	gsl_odeiv2_evolve * evolve = gsl_odeiv2_evolve_alloc(2);
 
+	// Reset, and define some working variables.
 	double h = 1;
 	int count = 1;
 	t = 0;
@@ -89,13 +93,15 @@ int main()
 	FILE * file;
 	file = fopen("phase_adap_gsl_rk_out", "w");
 
-	fprintf(file, "%-10s%-20s%-20s%-20s\n", "Interval", "Time", "Result V", "Result X");
+	fprintf(file, "%-10s%-20s%-20s%-20s%-20s\n", "Interval", "Time", "Result V", "Result X", "Width");
 	printf("Writing output to file 'phase_adap_gsl_rk_out'...\n");
 
 	while (t < goal)
 	{
+		// Define our starting width as 1, which is expected to change in the first
+		// iteration.
 		s = gsl_odeiv2_evolve_apply(evolve, control, step, &sys, &t, goal, &h, y);
-		fprintf(file, "%-10i%-20.15f%-20.15f%-20.15f\n", count, t, y[0], y[1]);
+		fprintf(file, "%-10i%-20.15f%-20.15f%-20.15f%-20.15f\n", count, t, y[0], y[1], h);
 		count++;
 		if (s != GSL_SUCCESS)
 		{
