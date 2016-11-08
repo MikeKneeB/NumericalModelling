@@ -63,7 +63,7 @@ int main()
 
 	if (intervals > 10000)
 	{
-		printf("This will take some time...")
+		printf("This will take some time...");
 	}
 
 	FILE * file;
