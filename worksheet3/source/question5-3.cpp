@@ -33,6 +33,8 @@ int Function(double t, const double y[], double f[], void * params);
  */
 int Jacobian(double t, const double y[], double * dfdy, double dfdt[], void * params);
 
+double ErrorEstimate(double v, double x);
+
 /**
  * Main function, creates necessary objects and then allows driver object to
  * find result using adaptive number of steps.
@@ -93,7 +95,7 @@ int main()
 	FILE * file;
 	file = fopen("phase_adap_gsl_rk_out", "w");
 
-	fprintf(file, "%-10s%-20s%-20s%-20s%-20s\n", "Interval", "Time", "Result V", "Result X", "Width");
+	fprintf(file, "%-10s%-20s%-20s%-20s%-20s%-20s\n", "Interval", "Time", "Result V", "Result X", "Width", "Error Est.");
 	printf("Writing output to file 'phase_adap_gsl_rk_out'...\n");
 
 	while (t < goal)
@@ -101,7 +103,7 @@ int main()
 		// Define our starting width as 1, which is expected to change in the first
 		// iteration.
 		s = gsl_odeiv2_evolve_apply(evolve, control, step, &sys, &t, goal, &h, y);
-		fprintf(file, "%-10i%-20.15f%-20.15f%-20.15f%-20.15f\n", count, t, y[0], y[1], h);
+		fprintf(file, "%-10i%-20.15f%-20.15f%-20.15f%-20.15f%-20.15f\n", count, t, y[0], y[1], h, ErrorEstimate(yInitial, y));
 		count++;
 		if (s != GSL_SUCCESS)
 		{
@@ -131,4 +133,11 @@ int Function(double t, const double y[], double f[], void * params)
 int Jacobian(double t, const double y[], double * dfdy, double dfdt[], void * params)
 {
 	return GSL_SUCCESS;
+}
+
+double ErrorEstimate(const double yInitial[], const double y[])
+{
+	double eInitial = yInitial[0] * yInitial[0] + yInitial[1] * yInitial[1];
+	double e = y[0] * y[0] + y[1] * y[1];
+	return std::abs((e - eInitial)/eInitial);
 }

@@ -15,6 +15,23 @@
 #include <iostream>
 #include <gsl/gsl_errno.h>
 #include <gsl/gsl_odeiv2.h>
+#include <cmath>
+
+/**
+ * AnalyticV returns the analytic solution for v at time t.
+ *
+ * double t : time to evaluate solution.
+ * return : value of v at t.
+ */
+double AnalyticV(double t);
+
+/**
+ * AnalyticX returns the analytic solution for x at time t.
+ *
+ * double t : time to evaluate solution.
+ * return : value of v at t.
+ */
+double AnalyticX(double t);
 
 /**
  * Function that gives the derivatives of both v and x. See report for details.
@@ -69,6 +86,8 @@ int main()
 	printf("Enter goal time: ");
 	std::cin >> goal;
 
+	double yActual[2] = {AnalyticV(goal), AnalyticX(goal)};
+
 	int interval, s;
 
 	printf("Enter number of steps: ");
@@ -91,11 +110,14 @@ int main()
 		case 1:
 			file = fopen("gsl_rk_out", "w");
 
+			
 			printf("Writing to file 'gsl_rk_out'...\n");
 
-			fprintf(file, "%-10s%-20s%-20s%-20s\n", "Interval", "Result V", "Result X", "Width");
+			fprintf(file, "%-10s%-20s%-20s%-20s%-20s%-20s\n", "Interval", "Result V", "Result X", "Error V", "Error X", "Width");
 
-			for (int i = 1; i <= interval; i++)
+			// Loop starts at 50, as the GSL routine fails at very large interval sizes.
+			// Starting from 50 still gives useful results, but prevents failures.
+			for (int i = 50; i <= interval; i++)
 			{
 				// Apply steps of size (goal/i) i times, store result in y.
 				// This means we will always get to the goal in i steps, as our
@@ -103,13 +125,13 @@ int main()
 				s = gsl_odeiv2_driver_apply_fixed_step(driver, &t, (goal-tInitial)/i, i, y);
 				// Print output before error check, as result may give some
 				// indication about failure...
-				fprintf(file, "%-10i%-20.15f%-20.15f%-20.15f\n", i, y[0], y[1], (goal-tInitial)/i);
+				fprintf(file, "%-10i%-20.15f%-20.15f%-20.15f%-20.15f%-20.15f\n", i, y[0], y[1], std::abs((y[0] - yActual[0])/yActual[0]), std::abs((y[1] - yActual[1])/yActual[1]), (goal-tInitial)/i);
 				//Check for error, and stop looping if something goes wrong.
-//				if (s != GSL_SUCCESS)
-//				{
-//					printf("Critical failure.\n");
-//					break;
-//				}
+				if (s != GSL_SUCCESS)
+				{
+					printf("Critical failure.\n");
+					break;
+				}
 				gsl_odeiv2_driver_reset(driver);
 				y[0] = yInitial[0];
 				y[1] = yInitial[1];
@@ -132,7 +154,7 @@ int main()
 
 				if (s != GSL_SUCCESS)
 				{
-					printf("Critical failure");
+					printf("Critical failure.\nUsually caused by width size being too low, try using larger intervals or a smaller goal time.\n");
 					break;
 				}
 			}
@@ -149,6 +171,17 @@ int main()
 
 	return 0;
 
+}
+
+double  AnalyticV(double t)
+{
+	// See report.
+	return std::cos(t);
+}
+
+double AnalyticX(double t)
+{
+	return std::sin(t);
 }
 
 int Function(double t, const double y[], double f[], void * params)
