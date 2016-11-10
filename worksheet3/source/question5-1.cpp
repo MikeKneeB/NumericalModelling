@@ -177,76 +177,124 @@ int Function(double t, const double y[], double f[], void * params);
  */
 int Jacobian(double t, const double y[], double * dfdy, double dfdt[], void * params);
 
-
+/**
+ * GSLError uses the GSL Runge-Kutta with interval size from 50 up to specified
+ * number of intervals. Starts at 50 intervals because the GSL routine doesn't
+ * work very well at low intervals. Outputs to file.
+ *
+ * std::string filename : output filename.
+ * Vector startY : initial conditions for the solution.
+ * double startT : start time for the initial conditions.
+ * int maxIntervals : highest interval number to use.
+ * double finalT : goal time.
+ */
 void GSLError(std::string filename, Vector startY, double startT, int maxIntervals, double finalT);
 
+/**
+ * GSLPhase uses the GSL Runge-Kutta method with specified number of intervals.
+ * Writes the state of the system to file after each step, in order to produce
+ * a phase plot.
+ *
+ * std::string filename : output filename.
+ * Vector startY : initial conditions for the solution.
+ * double startT : start time for the initial conditions.
+ * int maxIntervals : interval number to use.
+ * double finalT : goal time.
+ */
 void GSLPhase(std::string filename, Vector startY, double startT, int intervals, double finalT);
 
+/**
+ * Function to estimate the error using conservation of energy. See report for
+ * details.
+ *
+ * double yInitial[] : initial conditions of the function.
+ * double y[] : current values of v and x.
+ * return : estimated error from y from yInitial.
+ */
 double ErrorEstimate(const double yInitial[], const double y[]);
 
+/**
+ * This function uses the GSL adaptive ordinary integration procedure. Outputs
+ * after each stage, for a phase plot.
+ *
+ * std::string filename : output filename.
+ * Vector startY : initial conditions for the solution.
+ * double startT : start time for the initial conditions.
+ * double finalT : goal time.
+ */
 void AdaptiveGSLPhase(std::string filename, Vector startY, double startT, double finalT);
 
 /**
  * Main method requests goal time and max no. of intervals then applies rk
  * method and outputs result to file.
+ *
+ * return : 0
  */
 int main()
 {
-	// Initial conditions.
-	Vector startY;
-	startY.one = 1;
-	startY.two = 0;
-	double startT = 0;
-	
-	printf("\n#############################################\n");
-	printf("#                                           #\n");
-	printf("# Ordinary Differential Equation Calculator #\n");
-	printf("#                                           #\n");
-	printf("#############################################\n\n");
-	printf("(1) Second order Runge-Kutta error analysis.\n");
-	printf("(2) Second order Runge-Kutta phase plot.\n");
-	printf("(3) Fourth order Runge-Kutta error analysis (GSL).\n");
-	printf("(4) Fourth order Runge-Kutta phase plot (GSL).\n");
-	printf("(5) Adaptive fourth order Runge-Kutta phase plot (GSL).\n");
+	bool running = true;
 
-	int choice;
-	printf("Please enter a choice: ");
-
-	while (!(std::cin >> choice) || choice < 1 || choice > 5)
+	while (running)
 	{
-		printf("Enter valid choice: ");
-		std::cin.clear();
-		std::cin.ignore();
-	}
+		// Initial conditions.
+		Vector startY;
+		startY.one = 1;
+		startY.two = 0;
+		double startT = 0;
 	
-	double finalT;
-	printf("Please input goal time: ");
-	std::cin >> finalT;
+		printf("\n#############################################\n");
+		printf("#                                           #\n");
+		printf("# Ordinary Differential Equation Calculator #\n");
+		printf("#                                           #\n");
+		printf("#############################################\n\n");
+		printf("(1) Second order Runge-Kutta error analysis.\n");
+		printf("(2) Second order Runge-Kutta phase plot.\n");
+		printf("(3) Fourth order Runge-Kutta error analysis (GSL).\n");
+		printf("(4) Fourth order Runge-Kutta phase plot (GSL).\n");
+		printf("(5) Adaptive fourth order Runge-Kutta phase plot (GSL).\n");
+		printf("(6) Quit.\n");
+
+		int choice;
+		printf("Please enter a choice: ");
+
+		while (!(std::cin >> choice) || choice < 1 || choice > 6)
+		{
+			printf("Enter valid choice: ");
+			std::cin.clear();
+			std::cin.ignore();
+		}
+
+		if (choice == 6) break;
 	
-	int intervals;
-	printf("Please input no. of intervals: ");
-	std::cin >> intervals;
+		double finalT;
+		printf("\nPlease input goal time: ");
+		std::cin >> finalT;
+	
+		int intervals;
+		printf("Please input no. of intervals: ");
+		std::cin >> intervals;
 
-	switch (choice)
-	{
-		case 1:
-			RungeKuttaError("rk_out", startY, startT, intervals, finalT);
-			break;
-		case 2:
-			RungeKuttaPhase("phase_rk_out", startY, startT, intervals, finalT);
-			break;
-		case 3:
-			GSLError("gsl_out", startY, startT, intervals, finalT);
-			break;
-		case 4:
-			GSLPhase("phase_gsl_out", startY, startT, intervals, finalT);
-			break;
-		case 5:
-			AdaptiveGSLPhase("adap_phase_gsl_out", startY, startT, finalT);
-			break;
+		switch (choice)
+		{
+			case 1:
+				RungeKuttaError("rk_out", startY, startT, intervals, finalT);
+				break;
+			case 2:
+				RungeKuttaPhase("phase_rk_out", startY, startT, intervals, finalT);
+				break;
+			case 3:
+				GSLError("gsl_out", startY, startT, intervals, finalT);
+				break;
+			case 4:
+				GSLPhase("phase_gsl_out", startY, startT, intervals, finalT);
+				break;
+			case 5:
+				AdaptiveGSLPhase("adap_phase_gsl_out", startY, startT, finalT);
+				break;
+		}
+
+		printf("Done!\n");
 	}
-
-	printf("Done!\n");
 
 	return 0;
 }
@@ -326,8 +374,6 @@ void RungeKuttaError(std::string filename, Vector startY, double startT, int max
 
 	fclose(file);
 
-	printf("Done!");
-	
 	return;
 }
 
@@ -340,6 +386,7 @@ void RungeKuttaPhase(std::string filename, Vector startY, double startT, int int
 	fprintf(file, "%-10s%-20s%-20s%-20s%-20s\n",
 		"Interval", "Time", "Result V", "Result X", "Width");
 
+	// Initial conditions.
 	double t = startT;
 	double h = (finalT - startT)/intervals;
 	Vector y = startY;
@@ -354,8 +401,6 @@ void RungeKuttaPhase(std::string filename, Vector startY, double startT, int int
 	}
 
 	fclose(file);
-
-	printf("Done!");
 
 	return;
 }
@@ -406,8 +451,10 @@ void GSLError(std::string filename, Vector startY, double startT, int maxInterva
 
 	int s;
 
+	// Initial conditions from startY
 	double yInitial[2] = {0,0};
 	startY.ArrayConvert(yInitial);
+
 	double yActual[2] = {AnalyticV(finalT), AnalyticX(finalT)};
 
 	double t = startT;
@@ -442,8 +489,6 @@ void GSLError(std::string filename, Vector startY, double startT, int maxInterva
 		y[1] = yInitial[1];
 	}
 
-	printf("Done!");
-
 	fclose(file);
 
 	gsl_odeiv2_driver_free(driver);
@@ -471,12 +516,14 @@ void GSLPhase(std::string filename, Vector startY, double startT, int intervals,
 	// to any value.
 	gsl_odeiv2_driver * driver = gsl_odeiv2_driver_alloc_y_new(&sys, gsl_odeiv2_step_rk4, 1e-3, 1e-10, 1e-10);
 
+	// Initial conditions from startY.
 	double yInitial[2] = {0,0};
 	startY.ArrayConvert(yInitial);
 
 	double y[2] = {yInitial[0], yInitial[1]};
 	double t = startT;
 
+	// Integer for storing output.
 	int s;
 
 	FILE * file = fopen(filename.c_str(), "w");
@@ -490,6 +537,7 @@ void GSLPhase(std::string filename, Vector startY, double startT, int intervals,
 		// Apply one step of size goal/interval.
 		s = gsl_odeiv2_driver_apply_fixed_step(driver, &t, (finalT-startT)/intervals, 1, y);
 
+		// Output.
 		fprintf(file, "%-10i%-20.15f%-20.15f%-20.15f%-20.15f\n", i, t, y[0], y[1], (finalT-startT)/intervals);
 
 		if (s != GSL_SUCCESS)
@@ -500,8 +548,6 @@ void GSLPhase(std::string filename, Vector startY, double startT, int intervals,
 	}
 
 	fclose(file);
-
-	printf("Done!");
 
 	gsl_odeiv2_driver_free(driver);
 
@@ -529,12 +575,15 @@ void AdaptiveGSLPhase(std::string filename, Vector startY, double startT, double
 	std::cin >> anaError;
 
 	// Create lower level odeiv2 objects, outside of a driver wrapper.
+	// Using fourth order rk, 2 dimensions.
 	gsl_odeiv2_step * step = gsl_odeiv2_step_alloc(gsl_odeiv2_step_rk4, 2);
-	// Desired precision is 10 s.f.
+	// Use input error amounts. 
 	gsl_odeiv2_control * control = gsl_odeiv2_control_y_new(absError, anaError);
+	// 2 dimensions.
 	gsl_odeiv2_evolve * evolve = gsl_odeiv2_evolve_alloc(2);
 
 	int count = 1;
+	// Initial width of 1, will be changed by the function immediately.
 	double h = 1;
 
 	FILE * file;
@@ -563,13 +612,12 @@ void AdaptiveGSLPhase(std::string filename, Vector startY, double startT, double
 
 	fclose(file);
 
-	printf("Done!\n");
-
 	return;
 }
 
 double ErrorEstimate(const double yInitial[], const double y[])
 {
+	// Error estimate using conservation of energy, see report for details.
 	double eInitial = yInitial[0] * yInitial[0] + yInitial[1] * yInitial[1];
 	double e = y[0] * y[0] + y[1] * y[1];
 	return std::abs((e - eInitial)/eInitial);
