@@ -52,10 +52,12 @@ int main()
 {
 	double startY, startX, finalX;
 
-	// Initial conditions, and goal.
+	// Initial conditions.
 	startY = 0;
 	startX = 0;
-	finalX = M_PI/4;	
+
+	printf("Please input goal time: ");
+	std::cin >> finalX;
 	
 	int intervals;
 	printf("Please input no. of intervals: ");
@@ -63,7 +65,7 @@ int main()
 
 	if (intervals > 10000)
 	{
-		printf("This will take some time...");
+		printf("This may take some time...");
 	}
 
 	FILE * file;
@@ -80,6 +82,7 @@ int main()
 	
 	for (int i = 1; i <= intervals; i++)
 	{
+		// Compute answer, then write to file using intervals = i.
 		answer = Euler(Derivative, startY, startX, i, finalX);
 		fprintf(file, "%-10i%-20.15f%-20.15f%-20.15f\n", i, answer, std::abs((answer-actual)/actual), (finalX - startX)/i);
 	}
@@ -108,6 +111,7 @@ double Euler(double (*d)(double, double), double startY, double startX, int inte
 
 	double y0, y1, x;
 
+	// Initialise.
 	y0 = startY;
 	x = startX;
 

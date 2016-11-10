@@ -109,6 +109,7 @@ int main()
 		if (s != GSL_SUCCESS)
 		{
 			printf("Critical failure.\n");
+			break;
 		}
 	}
 
