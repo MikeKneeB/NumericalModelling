@@ -10,6 +10,7 @@
  */
 
 #include <cstdio>
+#include <cmath>
 #include <iostream>
 #include <gsl/gsl_errno.h>
 #include <gsl/gsl_odeiv2.h>
@@ -33,7 +34,7 @@ int Function(double t, const double y[], double f[], void * params);
  */
 int Jacobian(double t, const double y[], double * dfdy, double dfdt[], void * params);
 
-double ErrorEstimate(double v, double x);
+double ErrorEstimate(const double yInitial[], const double y[]);
 
 /**
  * Main function, creates necessary objects and then allows driver object to
