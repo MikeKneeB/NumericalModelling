@@ -86,6 +86,12 @@ Vector operator/(Vector const& lhs, double rhs)
 	return temp;
 }
 
+//~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+//
+// Non-GSL Functions
+//
+//~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
 /**
  * Function derivative return vector derivative at arbitrary time and vector y.
  *
@@ -152,6 +158,14 @@ void RungeKuttaError(std::string filename, Vector startY, double startT, int max
  * double finalT : goal time.
  */
 void RungeKuttaPhase(std::string filename, Vector startY, double startT, int intervals, double finalT);
+
+double ErrorEstimate(const Vector & yInitial, const Vector & y);
+
+//~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+//
+// GSL Routine Functions.
+//
+//~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 /**
  * AnalyticV returns the analytic solution for v at time t.
@@ -249,7 +263,7 @@ int main()
 	printf("#                                           #\n");
 	printf("# Ordinary Differential Equation Calculator #\n");
 	printf("#                                           #\n");
-	printf("#############################################\n\n");
+	printf("#############################################\n");
 
 	while (running)
 	{
@@ -259,7 +273,7 @@ int main()
 		startY.two = 0;
 		double startT = 0;
 	
-		printf("(1) Second order Runge-Kutta error analysis.\n");
+		printf("\n(1) Second order Runge-Kutta error analysis.\n");
 		printf("(2) Second order Runge-Kutta phase plot.\n");
 		printf("(3) Fourth order Runge-Kutta error analysis (GSL).\n");
 		printf("(4) Fourth order Runge-Kutta phase plot (GSL).\n");
@@ -276,6 +290,7 @@ int main()
 			std::cin.ignore();
 		}
 
+		// Exit.
 		if (choice == 6) break;
 	
 		double finalT;
@@ -283,11 +298,21 @@ int main()
 		std::cin >> finalT;
 	
 		int intervals;
-		printf("Please input no. of intervals: ");
-		std::cin >> intervals;
+		if (choice == 1 || choice == 3)
+		{
+			printf("Please input no. of intervals: 10^");
+			std::cin >> intervals;
+		}
+		// No need for interval number with adaptive method.
+		else if (choice == 2 || choice == 4)
+		{
+			printf("Please input no. of intervals: ");
+			std::cin >> intervals;
+		}
 
 		switch (choice)
 		{
+			// Run the function corresponding to the menu choice.
 			case 1:
 				RungeKuttaError("rk_out", startY, startT, intervals, finalT);
 				break;
@@ -370,18 +395,18 @@ void RungeKuttaError(std::string filename, Vector startY, double startT, int max
 	FILE * file = fopen(filename.c_str(), "w");
 	
 	printf("Writing to file %s...\n", filename.c_str());
-	fprintf(file, "%-10s%-20s%-20s%-20s%-20s%-20s\n",
+	fprintf(file, "%-20s%-20s%-20s%-20s%-20s%-20s\n",
 		"Intervals", "Result V", "Result X", "Analytic Error V", "Analytic Error X", "Width");
 	
-	for (int i = 1; i <= maxIntervals; i++)
+	for (int i = 0; i <= maxIntervals*2; i++)
 	{
 		// Apply rk i times.
-		answer = RungeKuttaSecond(Derivative, startY, startT, i, finalT);
-		fprintf(file, "%-10i%-20.15f%-20.15f%-20.15f%-20.15f%-20.15f\n", 
-		i, answer.one, answer.two, 
+		answer = RungeKuttaSecond(Derivative, startY, startT, (int)std::pow(10, i*0.5), finalT);
+		fprintf(file, "%-20i%-20.15f%-20.15f%-20.15f%-20.15f%-20.15f\n", 
+		(int)std::pow(10, i*0.5), answer.one, answer.two, 
 		std::abs((answer.one-actual.one)/actual.one),
 		std::abs((answer.two-actual.two)/actual.two),
-		(finalT - startT)/i);
+		(finalT - startT)/std::pow(10, i*0.5));
 	}
 
 	fclose(file);
@@ -395,8 +420,8 @@ void RungeKuttaPhase(std::string filename, Vector startY, double startT, int int
 
 	printf("Writing to file %s...\n", filename.c_str());
 
-	fprintf(file, "%-10s%-20s%-20s%-20s%-20s\n",
-		"Interval", "Time", "Result V", "Result X", "Width");
+	fprintf(file, "%-10s%-20s%-20s%-20s%-20s%-20s\n",
+		"Interval", "Time", "Result V", "Result X", "Width", "Error Est.");
 
 	// Initial conditions.
 	double t = startT;
@@ -406,7 +431,7 @@ void RungeKuttaPhase(std::string filename, Vector startY, double startT, int int
 	for (int i = 0; i != intervals; i++)
 	{
 		// Apply rk 1 time.
-		fprintf(file, "%-10i%-20.15f%-20.15f%-20.15f%-20.15f\n", i, t, y.one, y.two, h);
+		fprintf(file, "%-10i%-20.15f%-20.15f%-20.15f%-20.15f%-20.15f\n", i, t, y.one, y.two, h, ErrorEstimate(startY, y));
 		y = RungeKuttaStep(Derivative, y, t, h);
 		// Increment t.
 		t += h;
@@ -415,6 +440,13 @@ void RungeKuttaPhase(std::string filename, Vector startY, double startT, int int
 	fclose(file);
 
 	return;
+}
+
+double ErrorEstimate(const Vector & yInitial, const Vector & y)
+{
+	double eInitial = yInitial.one * yInitial.one + yInitial.two * yInitial.two;
+	double e = y.one * y.one + y.two * y.two;
+	return std::abs((eInitial - e)/eInitial);
 }
 
 double  AnalyticV(double t)
@@ -477,24 +509,25 @@ void GSLError(std::string filename, Vector startY, double startT, int maxInterva
 			
 	printf("Writing to file %s...\n", filename.c_str());
 
-	fprintf(file, "%-10s%-20s%-20s%-20s%-20s%-20s\n", "Interval", "Result V", "Result X", "Error V", "Error X", "Width");
+	fprintf(file, "%-20s%-20s%-20s%-20s%-20s%-20s\n", "Interval", "Result V", "Result X", "Error V", "Error X", "Width");
+
+	int n;
 	
 	// Loop starts at 50, as the GSL routine fails at very large interval sizes.
 	// Starting from 50 still gives useful results, but prevents failures.
-	for (int i = 50; i <= maxIntervals; i++)
+	for (int i = 0; i <= maxIntervals*2; i++)
 	{
+		n = (int)std::pow(10, i*0.5);
 		// Apply steps of size (goal/i) i times, store result in y.
 		// This means we will always get to the goal in i steps, as our
 		// initial condition for t is t=0.
-		s = gsl_odeiv2_driver_apply_fixed_step(driver, &t, (finalT-startT)/i, i, y);
-		// Print output before error check, as result may give some
-		// indication about failure...
-		fprintf(file, "%-10i%-20.15f%-20.15f%-20.15f%-20.15f%-20.15f\n", i, y[0], y[1], std::abs((y[0] - yActual[0])/yActual[0]), std::abs((y[1] - yActual[1])/yActual[1]), (finalT-startT)/i);
-		//Check for error, and stop looping if something goes wrong.
-		if (s != GSL_SUCCESS)
+		s = gsl_odeiv2_driver_apply_fixed_step(driver, &t, (finalT-startT)/n, n, y);
+		// Print output if success, but continue on failure, because
+		// higher intervals may solve the problem and give useful
+		// results. 
+		if (s == GSL_SUCCESS)
 		{
-			printf("Critical failure.\n");
-			break;
+			fprintf(file, "%-20i%-20.15f%-20.15f%-20.15f%-20.15f%-20.15f\n", n, y[0], y[1], std::abs((y[0] - yActual[0])/yActual[0]), std::abs((y[1] - yActual[1])/yActual[1]), (finalT-startT)/n);
 		}
 		gsl_odeiv2_driver_reset(driver);
 		y[0] = yInitial[0];
@@ -542,7 +575,7 @@ void GSLPhase(std::string filename, Vector startY, double startT, int intervals,
 
 	printf("Writing to file %s...\n", filename.c_str());
 
-	fprintf(file, "%-10s%-20s%-20s%-20s%-20s\n", "Interval", "Time", "Result V", "Result X", "Width");
+	fprintf(file, "%-10s%-20s%-20s%-20s%-20s%-20s\n", "Interval", "Time", "Result V", "Result X", "Width", "Error Est.");
 
 	for (int i = 0; i != intervals; i++)
 	{
@@ -550,7 +583,7 @@ void GSLPhase(std::string filename, Vector startY, double startT, int intervals,
 		s = gsl_odeiv2_driver_apply_fixed_step(driver, &t, (finalT-startT)/intervals, 1, y);
 
 		// Output.
-		fprintf(file, "%-10i%-20.15f%-20.15f%-20.15f%-20.15f\n", i, t, y[0], y[1], (finalT-startT)/intervals);
+		fprintf(file, "%-10i%-20.15f%-20.15f%-20.15f%-20.15f%-20.15f\n", i, t, y[0], y[1], (finalT-startT)/intervals, ErrorEstimate(yInitial, y));
 
 		if (s != GSL_SUCCESS)
 		{

@@ -60,7 +60,7 @@ int main()
 	std::cin >> finalX;
 	
 	int intervals;
-	printf("Please input no. of intervals: ");
+	printf("Please input no. of intervals: 10^");
 	std::cin >> intervals;
 
 	if (intervals > 10000)
@@ -78,13 +78,13 @@ int main()
 	// Actual answer for computing error.
 	double actual = Analytic(finalX);
 
-	fprintf(file, "%-10s%-20s%-20s%-20s\n", "Intervals", "Result", "Analytic Error", "Width");
+	fprintf(file, "%-15s%-20s%-20s%-20s\n", "Intervals", "Result", "Analytic Error", "Width");
 	
-	for (int i = 1; i <= intervals; i++)
+	for (int i = 0; i <= intervals*2; i++)
 	{
 		// Compute answer, then write to file using intervals = i.
-		answer = Euler(Derivative, startY, startX, i, finalX);
-		fprintf(file, "%-10i%-20.15f%-20.15f%-20.15f\n", i, answer, std::abs((answer-actual)/actual), (finalX - startX)/i);
+		answer = Euler(Derivative, startY, startX, (int)std::pow(10, i*0.5), finalX);
+		fprintf(file, "%-15i%-20.15f%-20.15f%-20.15f\n", (int)std::pow(10, i*0.5), answer, std::abs((answer-actual)/actual), (finalX - startX)/std::pow(10, i*0.5));
 	}
 
 	fclose(file);
