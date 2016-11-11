@@ -28,6 +28,17 @@ struct Vector
 	double one;
 	double two;
 
+	Vector() 
+	{}
+
+	Vector(double first, double second) :
+		one(first), two(second)
+	{}
+
+	Vector(const double arr[]) :
+		one(arr[0]), two(arr[1])
+	{}
+
 	// Defining basic arithmetic operations.
 	Vector operator+(Vector const& other)
 	{
@@ -234,6 +245,12 @@ int main()
 {
 	bool running = true;
 
+	printf("\n#############################################\n");
+	printf("#                                           #\n");
+	printf("# Ordinary Differential Equation Calculator #\n");
+	printf("#                                           #\n");
+	printf("#############################################\n\n");
+
 	while (running)
 	{
 		// Initial conditions.
@@ -242,11 +259,6 @@ int main()
 		startY.two = 0;
 		double startT = 0;
 	
-		printf("\n#############################################\n");
-		printf("#                                           #\n");
-		printf("# Ordinary Differential Equation Calculator #\n");
-		printf("#                                           #\n");
-		printf("#############################################\n\n");
 		printf("(1) Second order Runge-Kutta error analysis.\n");
 		printf("(2) Second order Runge-Kutta phase plot.\n");
 		printf("(3) Fourth order Runge-Kutta error analysis (GSL).\n");
