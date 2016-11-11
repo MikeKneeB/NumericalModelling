@@ -24,7 +24,7 @@ object_dir="images/"
 success = True
 
 executables_to_compile={"question1.cpp" : "euler",
-			"question5-1.cpp" : "rungekutta",
+			"question5.cpp" : "rungekutta",
 			"question5-2.cpp" : "gsl_rk",
                         "question5-3.cpp" : "adap_gsl_rk"}
 
