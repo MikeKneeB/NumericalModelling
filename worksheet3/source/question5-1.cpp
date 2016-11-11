@@ -28,6 +28,17 @@ struct Vector
 	double one;
 	double two;
 
+	Vector() 
+	{}
+
+	Vector(double first, double second) :
+		one(first), two(second)
+	{}
+
+	Vector(const double arr[]) :
+		one(arr[0]), two(arr[1])
+	{}
+
 	// Defining basic arithmetic operations.
 	Vector operator+(Vector const& other)
 	{
