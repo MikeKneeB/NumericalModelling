@@ -1,5 +1,5 @@
 /**
- * Mike Knee 05/11/2016
+ * Mike Knee 11/11/2016
  *
  * Source code for a program which uses Euler's method to solve a first order
  * differential equation. The differential equation is y' = 1 + y^2. The

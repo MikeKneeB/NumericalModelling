@@ -1,10 +1,12 @@
 /**
- * Mike Knee 05/11/2016
+ * Mike Knee 11/11/2016
  *
  * Source code for a program to estimate the solution to a second order 
  * differential equation (split into two first order ODEs) using the
  * Runge-Kutta method. Includes a basic vector type for simple required
  * vector operations.
+ *
+ * GSL version 1.16
  */
 
 #include <cstdio>
@@ -159,6 +161,14 @@ void RungeKuttaError(std::string filename, Vector startY, double startT, int max
  */
 void RungeKuttaPhase(std::string filename, Vector startY, double startT, int intervals, double finalT);
 
+/**
+ * Function to estimate error using conservation of energy, see report for
+ * details.
+ *
+ * Vector yInitial : initial conditions.
+ * Vector y : current state of the system.
+ * return : esitmate of the error in the current state.
+ */
 double ErrorEstimate(const Vector & yInitial, const Vector & y);
 
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -489,9 +499,10 @@ void GSLError(std::string filename, Vector startY, double startT, int maxInterva
 	// method to use, in this case fourth order Runge-Kutta. Following this
 	// is the initial step size and the desired absolute and relative error
 	// respectively. In our case fixed step sizes are used so these final
-	// two parameters will not be required by the routine, and could be set
-	// to any value.
-	gsl_odeiv2_driver * driver = gsl_odeiv2_driver_alloc_y_new(&sys, gsl_odeiv2_step_rk4, 1e-3, 1e-10, 1e-10);
+	// two parameters will not be required by the routine, and should be
+	// set to one to prevent failures if the error is not within the
+	// boundary.
+	gsl_odeiv2_driver * driver = gsl_odeiv2_driver_alloc_y_new(&sys, gsl_odeiv2_step_rk4, 1e-3, 1, 1);
 
 	int s;
 
@@ -549,17 +560,8 @@ void GSLPhase(std::string filename, Vector startY, double startT, int intervals,
 	// which in this case is 2 (v & x).
 	gsl_odeiv2_system sys = {Function, Jacobian, 2, params};
 
-	// Create driver object for the system. Driver object is a higher level
-	// wrapper for all the various GSL functions related to ODE solving.
-	// This wrapper drastically reduces code complexity for our program.
-	//
-	// We pass in our system as the first parameter and then specify which
-	// method to use, in this case fourth order Runge-Kutta. Following this
-	// is the initial step size and the desired absolute and relative error
-	// respectively. In our case fixed step sizes are used so these final
-	// two parameters will not be required by the routine, and could be set
-	// to any value.
-	gsl_odeiv2_driver * driver = gsl_odeiv2_driver_alloc_y_new(&sys, gsl_odeiv2_step_rk4, 1e-3, 1e-10, 1e-10);
+	// Driver is the same as previously.
+	gsl_odeiv2_driver * driver = gsl_odeiv2_driver_alloc_y_new(&sys, gsl_odeiv2_step_rk4, 1e-3, 1, 1);
 
 	// Initial conditions from startY.
 	double yInitial[2] = {0,0};
